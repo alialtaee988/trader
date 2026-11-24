@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#070b14">
+    <title>سجل المتداول PRO | منصة التداول الذكية</title>
+    <!-- خط Cairo العربي الأنيق -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js للرسوم البيانية -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        darkbg: '#070b14',
+                        cardbg: '#0f1626',
+                        accent: '#3b82f6',
+                        profit: '#10b981',
+                        loss: '#ef4444'
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.35s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(14px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #070b14;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.09) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.08) 0px, transparent 50%);
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        /* تخصيص شريط التمرير */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070b14;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .glass-card {
+            background: rgba(15, 22, 38, 0.72);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(51, 65, 85, 0.45);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .glass-card-hover:hover {
+            transform: translateY(-2px);
+            border-color: rgba(96, 165, 250, 0.4);
+            box-shadow: 0 14px 35px -10px rgba(59, 130, 246, 0.15);
+        }
+        .num-ltr {
+            direction: ltr;
+            display: inline-block;
+        }
+        /* خلفية مخططة لأيام عطلة السوق السبت والأحد */
+        .weekend-pattern {
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(30, 41, 59, 0.45),
+                rgba(30, 41, 59, 0.45) 8px,
+                rgba(15, 23, 42, 0.65) 8px,
+                rgba(15, 23, 42, 0.65) 16px
+            );
+        }
+        /* توهج الأيام الرابحة والخاسرة في التقويم */
+        .cal-profit {
+            background: linear-gradient(145deg, rgba(16, 185, 129, 0.22), rgba(6, 78, 59, 0.35));
+            border-color: rgba(16, 185, 129, 0.55);
+            box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.12);
+        }
+        .cal-profit:hover {
+            border-color: #34d399;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+        }
+        .cal-loss {
+            background: linear-gradient(145deg, rgba(239, 68, 68, 0.22), rgba(127, 29, 29, 0.35));
+            border-color: rgba(239, 68, 68, 0.55);
+            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.12);
+        }
+        .cal-loss:hover {
+            border-color: #f87171;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+        }
+        .cal-neutral {
+            background: rgba(248, 250, 252, 0.06);
+            border-color: rgba(226, 232, 240, 0.22);
+        }
+        .cal-neutral:hover {
+            background: rgba(248, 250, 252, 0.12);
+            border-color: rgba(248, 250, 252, 0.45);
+        }
+    </style>
+<style>
+    html{-webkit-tap-highlight-color:transparent}
+    body{padding-top:env(safe-area-inset-top,0px);-webkit-user-select:none;user-select:none}
+    input,textarea,select{-webkit-user-select:text;user-select:text;font-size:16px}
+    #bottomNav{display:none}
+    @media (max-width:767px){
+      header nav,header p.text-xs{display:none!important}
+      header h1{font-size:1.05rem}
+      main{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))!important}
+      #bottomNav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:40;justify-content:space-around;
+        padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px));background:rgba(10,16,30,.94);
+        backdrop-filter:blur(14px);border-top:1px solid #1e293b}
+      #bottomNav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;
+        border-radius:14px;font:800 11px Cairo,sans-serif;color:#94a3b8;transition:.2s}
+      #bottomNav button i{font-size:19px}
+      #bottomNav button.on{color:#fff;background:linear-gradient(135deg,#2563eb,#4f46e5);box-shadow:0 6px 18px rgba(37,99,235,.3)}
+    }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-blue-500 selection:text-white">
+
+    <!-- إشعارات Toast -->
+    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2.5 pointer-events-none"></div>
+
+    <!-- نافذة تأكيد مخصصة -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/75 backdrop-blur-md z-50 hidden items-center justify-center p-4 animate-fade-in">
+        <div class="bg-[#0f1626] border border-slate-700/80 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center gap-3 text-amber-400 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                </div>
+                <h3 id="confirmTitle" class="text-lg font-extrabold text-white">تأكيد الإجراء</h3>
+            </div>
+            <p id="confirmMessage" class="text-slate-300 text-sm leading-relaxed mb-6">هل أنت متأكد من المتابعة؟</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirmCancelBtn" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">إلغاء</button>
+                <button id="confirmOkBtn" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-extrabold transition shadow-lg shadow-red-600/20">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة معاينة الصفقة وصورة الشارت (Trade Detail & Screenshot Lightbox) -->
+    <div id="tradeDetailModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4 animate-fade-in">
+        <div class="bg-[#0f1626] border border-slate-700/80 rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#0a0f1c]">
+                <div class="flex items-center gap-3">
+                    <span id="modalTradePair" class="text-lg font-black text-amber-400 num-ltr">XAU/USD</span>
+                    <span id="modalTradeDir" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400">شراء</span>
+                    <span id="modalTradeStatus" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-500/15 text-blue-400">مغلقة</span>
+                </div>
+                <button onclick="closeTradeDetailModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-5">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[11px] text-slate-400 block">التاريخ واليوم</span>
+                        <span id="modalTradeDate" class="text-xs font-bold text-white mt-0.5 block">2026-11-24</span>
+                    </div>
+                    <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[11px] text-slate-400 block">حجم اللوت</span>
+                        <span id="modalTradeLot" class="text-sm font-extrabold text-white num-ltr mt-0.5 block">0.25 Lot</span>
+                    </div>
+                    <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[11px] text-slate-400 block">النتيجة المالية</span>
+                        <span id="modalTradePnL" class="text-sm font-black num-ltr mt-0.5 block text-emerald-400">+193.25 $</span>
+                    </div>
+                    <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-3">
+                        <span class="text-[11px] text-slate-400 block">الالتزام بالخطة</span>
+                        <span id="modalTradeDisc" class="text-xs font-bold mt-0.5 block text-emerald-400">ملتزم بالخطة</span>
+                    </div>
+                </div>
+
+                <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-4">
+                    <span class="text-xs font-bold text-slate-400 block mb-1">السبب الفني وملاحظات الصفقة:</span>
+                    <p id="modalTradeSetup" class="text-sm text-slate-200 leading-relaxed">إعادة اختبار مستوى يومي</p>
+                </div>
+
+                <!-- قسم صورة الشارت -->
+                <div>
+                    <span class="text-xs font-bold text-slate-300 flex items-center gap-2 mb-2">
+                        <i class="fa-regular fa-image text-blue-400"></i>
+                        صورة الشارت المرفقة:
+                    </span>
+                    <div id="modalTradeImageContainer" class="rounded-2xl border border-slate-800 bg-[#070b14] overflow-hidden flex items-center justify-center min-h-[200px]">
+                        <!-- الصورة أو رسالة عدم وجود صورة -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الشريط العلوي (Header) -->
+    <header class="sticky top-0 z-30 glass-card border-b border-slate-800/80 px-4 py-3 sm:px-8">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <!-- الشعار -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                    <i class="fa-solid fa-chart-line text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                        سجل المتداول
+                        <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-500/20 to-emerald-500/20 text-emerald-300 border border-emerald-500/30">ELITE</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">منصتك الاحترافية لتتبع الصفقات، التقويم، وتحليل الأداء</p>
+                </div>
+            </div>
+
+            <!-- التبويبات الرئيسية الثلاثة -->
+            <nav class="flex items-center bg-[#070b14]/90 p-1.5 rounded-2xl border border-slate-800/90 shadow-inner">
+                <button onclick="switchTab('journal')" id="tab-journal" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/25">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>السجل اليومي</span>
+                    <span id="openTradesHeaderBadge" class="hidden px-1.5 py-0.5 text-[10px] rounded-full bg-amber-400 text-slate-950 font-black">0</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="tab-calendar" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all text-slate-400 hover:text-white">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>التقويم الذكي</span>
+                </button>
+                <button onclick="switchTab('analytics')" id="tab-analytics" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>التقييم الشامل</span>
+                </button>
+            </nav>
+
+            <!-- أزرار التصدير والنسخ الاحتياطي -->
+            <div class="flex items-center gap-2">
+                <button onclick="exportCSV()" title="تصدير ملف Excel / CSV" class="p-2.5 rounded-xl bg-slate-800/70 hover:bg-emerald-950/60 text-emerald-400 border border-slate-700/60 transition flex items-center gap-1.5 text-xs font-bold">
+                    <i class="fa-solid fa-file-excel text-sm"></i>
+                    <span class="hidden xl:inline">Excel</span>
+                </button>
+                <button onclick="exportJSON()" title="حفظ نسخة احتياطية JSON" class="p-2.5 rounded-xl bg-slate-800/70 hover:bg-blue-950/60 text-blue-400 border border-slate-700/60 transition flex items-center gap-1.5 text-xs font-bold">
+                    <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+                    <span class="hidden xl:inline">حفظ</span>
+                </button>
+                <label title="استيراد نسخة احتياطية" class="cursor-pointer p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition flex items-center gap-1.5 text-xs font-bold">
+                    <i class="fa-solid fa-cloud-arrow-up text-sm"></i>
+                    <span class="hidden xl:inline">استيراد</span>
+                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importJSON(event)">
+                </label>
+                <button onclick="confirmResetData()" title="استعادة البيانات التجريبية" class="p-2.5 rounded-xl bg-slate-800/70 hover:bg-red-950/60 text-slate-400 hover:text-red-400 border border-slate-700/60 transition text-xs">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 sm:px-8 space-y-6">
+
+        <!-- ============================================================ -->
+        <!-- 1. قسم السجل اليومي والصفقات (Journal & Active Trades View)  -->
+        <!-- ============================================================ -->
+        <section id="view-journal" class="space-y-6 animate-slide-up">
+
+            <!-- شريط اختيار اليوم + عداد الصفقات المفتوحة -->
+            <div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="text-xs font-extrabold text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-regular fa-calendar-days text-blue-400 text-sm"></i>
+                        صفحة اليوم:
+                    </span>
+                    <select id="daySelector" onchange="selectDay(this.value)" class="bg-[#070b14] border border-slate-700/80 text-white text-sm font-bold rounded-xl px-4 py-2.5 focus:outline-none focus:border-blue-500 min-w-[240px] transition">
+                    </select>
+                    <span id="weekendWarningBadge" class="hidden px-3 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-lock"></i> عطلة السوق (السبت / الأحد)
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="openNewDayModal()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-extrabold transition flex items-center gap-2 shadow-lg shadow-blue-600/25">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>فتح يوم جديد</span>
+                    </button>
+                    <button onclick="confirmDeleteCurrentDay()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-red-900/50 text-slate-400 hover:text-red-400 border border-slate-700/70 transition" title="حذف هذا اليوم">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- شريط الصفقات المفتوحة حالياً عبر الحساب (إن وجدت) -->
+            <div id="activeTradesBanner" class="hidden glass-card rounded-2xl p-4 border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-slate-900/60 to-blue-500/10">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                        <h3 class="text-sm font-extrabold text-amber-300">صفقات مفتوحة حالياً (Active Positions)</h3>
+                    </div>
+                    <span class="text-[11px] text-slate-400">تُحتسب ضمن التقييم بمجرد إغلاقها أو تحديث ربحها العائم</span>
+                </div>
+                <div id="activeTradesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <!-- بطاقات الصفقات المفتوحة -->
+                </div>
+            </div>
+
+            <!-- بطاقة ملخص اليوم والرصيد + حارس الهدف والخسارة -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                
+                <!-- تفاصيل الرصيد والأداء اليومي -->
+                <div class="lg:col-span-8 glass-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-4 mb-5">
+                            <div>
+                                <div class="flex items-center gap-2.5">
+                                    <h2 id="displayDayName" class="text-2xl font-black text-white">يوم الثلاثاء</h2>
+                                    <span id="displayDate" class="text-xs font-bold px-3 py-1 rounded-xl bg-slate-800/90 text-blue-300 border border-slate-700/60 num-ltr">2026-11-24</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-1">تحديث تلقائي للرصيد التراكمي ونسبة النمو مع كل صفقة</p>
+                            </div>
+
+                            <!-- شارة حالة اليوم -->
+                            <div id="dayStatusBadge" class="px-4 py-2 rounded-xl border flex items-center gap-2 font-extrabold text-sm"></div>
+                        </div>
+
+                        <!-- الأرقام الأربعة الرئيسية -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-5">
+                            <div class="bg-[#070b14]/85 border border-slate-800/90 rounded-2xl p-3.5 hover:border-slate-700 transition">
+                                <label class="text-[11px] text-slate-400 block mb-1">الرصيد الافتتاحي ($)</label>
+                                <div class="flex items-center gap-1">
+                                    <input type="number" step="any" id="startingBalanceInput" onchange="updateStartingBalance(this.value)" class="w-full bg-transparent text-lg font-black text-white focus:outline-none focus:text-blue-400 num-ltr" value="9800">
+                                    <i class="fa-solid fa-pen text-[10px] text-slate-600"></i>
+                                </div>
+                            </div>
+
+                            <div class="bg-[#070b14]/85 border border-slate-800/90 rounded-2xl p-3.5">
+                                <span class="text-[11px] text-slate-400 block mb-1">صافي اليوم (USD)</span>
+                                <div id="dayNetPnL" class="text-lg font-black num-ltr text-emerald-400">+757.90 $</div>
+                            </div>
+
+                            <div class="bg-[#070b14]/85 border border-slate-800/90 rounded-2xl p-3.5">
+                                <span class="text-[11px] text-slate-400 block mb-1">الرصيد الختامي ($)</span>
+                                <div id="dayEndingBalance" class="text-lg font-black text-white num-ltr">10,557.90 $</div>
+                            </div>
+
+                            <div class="bg-[#070b14]/85 border border-slate-800/90 rounded-2xl p-3.5">
+                                <span class="text-[11px] text-slate-400 block mb-1">نسبة النمو / العمليات</span>
+                                <div class="flex items-center justify-between gap-1">
+                                    <span id="dayGrowthPct" class="text-base font-black text-emerald-400 num-ltr">+7.73%</span>
+                                    <span id="dayTradesCountBadge" class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-blue-500/15 text-blue-300">5 عمليات</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ميزة إضافية ذكية: شريط هدف الربح اليومي وحارس الخسارة -->
+                    <div class="bg-[#070b14]/70 border border-slate-800/80 rounded-2xl p-3.5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs mb-2">
+                            <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-shield-halved text-blue-400"></i>
+                                حارس الانضباط اليومي (هدف الربح: <input type="number" id="dailyTargetInput" onchange="updateRiskLimits()" class="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-emerald-400 font-bold num-ltr" value="500">$ | حد الخسارة: <input type="number" id="dailyMaxLossInput" onchange="updateRiskLimits()" class="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-center text-red-400 font-bold num-ltr" value="300">$)
+                            </span>
+                            <span id="riskGuardStatusText" class="font-extrabold text-emerald-400">تم تحقيق الهدف اليومي بنجاح!</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="riskGuardBar" class="h-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-500 rounded-full" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الحالة النفسية وملاحظات اليوم -->
+                <div class="lg:col-span-4 glass-card rounded-2xl p-5 flex flex-col justify-between">
+                    <div>
+                        <label class="text-xs font-extrabold text-slate-300 flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-brain text-purple-400"></i>
+                            الحالة النفسية والذهنية اليوم:
+                        </label>
+                        <div class="grid grid-cols-2 gap-2 mb-4" id="moodButtons">
+                            <button type="button" onclick="setDayMood('مركز وهادئ')" data-mood="مركز وهادئ" class="mood-btn text-xs font-bold py-2.5 px-2.5 rounded-xl border border-slate-700 bg-[#070b14] text-slate-300 transition flex items-center justify-center gap-1.5">
+                                <span>🎯</span> مركز وهادئ
+                            </button>
+                            <button type="button" onclick="setDayMood('مرتاح')" data-mood="مرتاح" class="mood-btn text-xs font-bold py-2.5 px-2.5 rounded-xl border border-slate-700 bg-[#070b14] text-slate-300 transition flex items-center justify-center gap-1.5">
+                                <span>😌</span> مرتاح
+                            </button>
+                            <button type="button" onclick="setDayMood('متوتر')" data-mood="متوتر" class="mood-btn text-xs font-bold py-2.5 px-2.5 rounded-xl border border-slate-700 bg-[#070b14] text-slate-300 transition flex items-center justify-center gap-1.5">
+                                <span>⚡</span> متوتر
+                            </button>
+                            <button type="button" onclick="setDayMood('مستعجل')" data-mood="مستعجل" class="mood-btn text-xs font-bold py-2.5 px-2.5 rounded-xl border border-slate-700 bg-[#070b14] text-slate-300 transition flex items-center justify-center gap-1.5">
+                                <span>⏳</span> مستعجل
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="dayNotesInput" class="text-xs font-extrabold text-slate-300 flex items-center gap-2 mb-1.5">
+                            <i class="fa-solid fa-pen-nib text-amber-400"></i>
+                            خلاصة اليوم / دروس التداول:
+                        </label>
+                        <textarea id="dayNotesInput" rows="3" onchange="updateDayNotes(this.value)" placeholder="سجل ملاحظاتك عن حركة السوق، الجلسات، أو أي درس تعلمته اليوم..." class="w-full bg-[#070b14] border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none leading-relaxed"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نموذج تسجيل الصفقة + جدول الصفقات -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- نموذج الإدخال السريع مع إرفاق الصورة وحالة الصفقة (4 أعمدة) -->
+                <div class="lg:col-span-4 glass-card rounded-2xl p-5 h-fit border-t-2 border-t-blue-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 id="formTitle" class="text-base font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-amber-400"></i>
+                            <span>تسجيل صفقة جديدة</span>
+                        </h3>
+                        <button type="button" id="cancelEditBtn" onclick="resetTradeForm()" class="hidden text-xs text-slate-400 hover:text-white underline">إلغاء التعديل</button>
+                    </div>
+
+                    <form id="tradeForm" onsubmit="handleTradeSubmit(event)" class="space-y-3.5">
+                        <input type="hidden" id="editTradeId" value="">
+
+                        <!-- حالة الصفقة: مغلقة أم مفتوحة -->
+                        <div>
+                            <label class="text-xs font-bold text-slate-300 block mb-1.5">حالة الصفقة</label>
+                            <div class="grid grid-cols-2 gap-1.5 bg-[#070b14] p-1 rounded-xl border border-slate-800">
+                                <button type="button" id="statusClosedBtn" onclick="setTradeStatus('closed')" class="py-1.5 rounded-lg text-xs font-extrabold transition bg-blue-600 text-white shadow">
+                                    <i class="fa-solid fa-check-double ml-1"></i> مغلقة (منتهية)
+                                </button>
+                                <button type="button" id="statusOpenBtn" onclick="setTradeStatus('open')" class="py-1.5 rounded-lg text-xs font-extrabold transition text-slate-400 hover:text-white">
+                                    <i class="fa-solid fa-spinner ml-1"></i> مفتوحة الآن
+                                </button>
+                            </div>
+                            <input type="hidden" id="tradeStatus" value="closed">
+                        </div>
+
+                        <!-- 1. حجم اللوت -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-xs font-bold text-slate-300">حجم اللوت (Lot)</label>
+                                <div class="flex gap-1">
+                                    <button type="button" onclick="setQuickLot('0.10')" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition num-ltr">0.10</button>
+                                    <button type="button" onclick="setQuickLot('0.25')" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition num-ltr">0.25</button>
+                                    <button type="button" onclick="setQuickLot('0.50')" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition num-ltr">0.50</button>
+                                    <button type="button" onclick="setQuickLot('1.00')" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition num-ltr">1.00</button>
+                                </div>
+                            </div>
+                            <input type="number" step="0.01" min="0.01" id="tradeLot" required placeholder="0.25" class="w-full bg-[#070b14] border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm font-black text-white focus:outline-none focus:border-blue-500 num-ltr" value="0.25">
+                        </div>
+
+                        <!-- 2. الزوج / الأصل -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-xs font-bold text-slate-300">الزوج / الأصل</label>
+                                <div class="flex gap-1">
+                                    <button type="button" onclick="setQuickPair('XAU/USD')" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-amber-600 text-amber-300 hover:text-white transition">الذهب</button>
+                                    <button type="button" onclick="setQuickPair('EUR/USD')" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition num-ltr">EUR</button>
+                                    <button type="button" onclick="setQuickPair('NAS100')" class="text-[11px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition num-ltr">NAS100</button>
+                                </div>
+                            </div>
+                            <input type="text" id="tradePair" required placeholder="XAU/USD" class="w-full bg-[#070b14] border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm font-black text-white focus:outline-none focus:border-blue-500 num-ltr uppercase" value="XAU/USD">
+                        </div>
+
+                        <!-- 3. النتيجة المالية والاتجاه -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label id="pnlInputLabel" class="text-xs font-bold text-slate-300 block mb-1.5">الربح / الخسارة ($)</label>
+                                <input type="number" step="any" id="tradePnL" placeholder="+150 أو -50" class="w-full bg-[#070b14] border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm font-black text-white focus:outline-none focus:border-blue-500 num-ltr">
+                            </div>
+
+                            <div>
+                                <label class="text-xs font-bold text-slate-300 block mb-1.5">نوع العملية</label>
+                                <div class="grid grid-cols-2 gap-1 bg-[#070b14] p-1 rounded-xl border border-slate-800">
+                                    <button type="button" id="dirBuyBtn" onclick="setTradeDirection('شراء')" class="py-1.5 rounded-lg text-xs font-extrabold transition bg-emerald-600 text-white">شراء</button>
+                                    <button type="button" id="dirSellBtn" onclick="setTradeDirection('بيع')" class="py-1.5 rounded-lg text-xs font-extrabold transition text-slate-400 hover:text-white">بيع</button>
+                                </div>
+                                <input type="hidden" id="tradeDirection" value="شراء">
+                            </div>
+                        </div>
+
+                        <!-- 4. السبب الفني -->
+                        <div>
+                            <label class="text-xs font-bold text-slate-300 block mb-1.5">السبب الفني / السيت أب</label>
+                            <select id="tradeSetup" class="w-full bg-[#070b14] border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs font-bold text-white focus:outline-none focus:border-blue-500">
+                                <option value="كسر جلسة">كسر نطاق جلسة (Breakout)</option>
+                                <option value="إعادة اختبار يومي">إعادة اختبار مستوى يومي (1D Retest)</option>
+                                <option value="سحب سيولة">سحب سيولة وارتداد (Liquidity Sweep)</option>
+                                <option value="استمرار اتجاه">استمرار اتجاه (Trend Continuation)</option>
+                                <option value="خبر / تذبذب">تداول وقت الأخبار</option>
+                                <option value="أخرى">سبب آخر</option>
+                            </select>
+                        </div>
+
+                        <!-- 5. إرفاق صورة الشارت (Screenshot) -->
+                        <div>
+                            <label class="text-xs font-bold text-slate-300 flex items-center justify-between mb-1.5">
+                                <span>صورة الشارت (اختياري)</span>
+                                <span class="text-[10px] text-slate-500">تُضغط وتُحفظ تلقائياً</span>
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <label class="flex-grow cursor-pointer bg-[#070b14] hover:bg-slate-900 border border-dashed border-slate-700 hover:border-blue-500 rounded-xl px-3 py-2.5 text-xs text-slate-300 flex items-center justify-center gap-2 transition">
+                                    <i class="fa-solid fa-camera text-blue-400"></i>
+                                    <span id="imageUploadLabel">اختر صورة الشارت...</span>
+                                    <input type="file" id="tradeImageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                                </label>
+                                <button type="button" id="clearImageBtn" onclick="clearTradeImage()" class="hidden p-2.5 rounded-xl bg-red-950/60 text-red-400 hover:bg-red-900/60 border border-red-500/30 text-xs" title="إزالة الصورة">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div id="imagePreviewBox" class="hidden mt-2 relative rounded-xl overflow-hidden border border-slate-700 h-24 bg-[#070b14]">
+                                <img id="imagePreviewTag" src="" alt="معاينة الشارت" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+
+                        <!-- 6. مؤشر الالتزام -->
+                        <div>
+                            <label class="text-xs font-bold text-slate-300 block mb-1.5">الالتزام بالخطة والستوب؟</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" id="discYesBtn" onclick="setTradeDiscipline(true)" class="py-2 px-3 rounded-xl border border-emerald-500/50 bg-emerald-500/15 text-emerald-400 text-xs font-extrabold flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-circle-check"></i> ملتزم
+                                </button>
+                                <button type="button" id="discNoBtn" onclick="setTradeDiscipline(false)" class="py-2 px-3 rounded-xl border border-slate-700 bg-[#070b14] text-slate-400 text-xs font-extrabold flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-circle-xmark"></i> غير ملتزم
+                                </button>
+                            </div>
+                            <input type="hidden" id="tradeDiscipline" value="true">
+                        </div>
+
+                        <button type="submit" id="submitTradeBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-sm shadow-lg shadow-blue-600/25 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            <span>حفظ الصفقة في السجل</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- جدول صفقات اليوم (8 أعمدة) -->
+                <div class="lg:col-span-8 glass-card rounded-2xl p-5 flex flex-col">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-emerald-400"></i>
+                            <span>صفقات اليوم المسجلة</span>
+                        </h3>
+                        <span class="text-xs text-slate-400">اضغط على أي صفقة لعرض تفاصيلها وصورة الشارت</span>
+                    </div>
+
+                    <div class="overflow-x-auto flex-grow">
+                        <table class="w-full text-right border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400 text-xs">
+                                    <th class="py-3 px-2 font-bold">#</th>
+                                    <th class="py-3 px-2.5 font-bold">الحالة</th>
+                                    <th class="py-3 px-2.5 font-bold">اللوت</th>
+                                    <th class="py-3 px-2.5 font-bold">الزوج</th>
+                                    <th class="py-3 px-2.5 font-bold">النوع</th>
+                                    <th class="py-3 px-2.5 font-bold">السبب</th>
+                                    <th class="py-3 px-2.5 font-bold text-center">الشارت</th>
+                                    <th class="py-3 px-2.5 font-bold">النتيجة ($)</th>
+                                    <th class="py-3 px-2 font-bold text-center">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradesTableBody" class="divide-y divide-slate-800/60 text-sm">
+                                <!-- الصفوف تُحقن ديناميكياً -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- شريط الخلاصة السفلي -->
+                    <div class="mt-4 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-[#070b14]/70 px-4 py-3 rounded-xl">
+                        <div class="flex items-center gap-4 text-xs">
+                            <span class="text-slate-400">العمليات: <strong id="footerCount" class="text-white">0</strong></span>
+                            <span class="text-slate-400">الرابح: <strong id="footerWins" class="text-emerald-400">0</strong></span>
+                            <span class="text-slate-400">الخاسر: <strong id="footerLosses" class="text-red-400">0</strong></span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm font-black">
+                            <span class="text-slate-300">صافي اليوم المغلق:</span>
+                            <span id="footerNetPnL" class="num-ltr text-base text-emerald-400">+0.00 $</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 2. قسم التقويم التفاعلي للأداء (P&L Calendar View)           -->
+        <!-- ============================================================ -->
+        <section id="view-calendar" class="hidden space-y-6 animate-slide-up">
+            
+            <!-- رأس التقويم وأدوات التنقل بين الأشهر -->
+            <div class="glass-card rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <button onclick="changeCalendarMonth(-1)" class="w-10 h-10 rounded-xl bg-slate-800/80 hover:bg-blue-600 text-white flex items-center justify-center transition">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <div class="text-center min-w-[170px]">
+                        <h2 id="calendarMonthTitle" class="text-xl font-black text-white">نوفمبر 2026</h2>
+                        <span id="calendarMonthSubtitle" class="text-xs text-slate-400 num-ltr">2026 - 11</span>
+                    </div>
+                    <button onclick="changeCalendarMonth(1)" class="w-10 h-10 rounded-xl bg-slate-800/80 hover:bg-blue-600 text-white flex items-center justify-center transition">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                </div>
+
+                <!-- ملخص الشهر المعروض في التقويم -->
+                <div class="flex flex-wrap items-center gap-4 bg-[#070b14]/80 px-5 py-3 rounded-2xl border border-slate-800">
+                    <div>
+                        <span class="text-[11px] text-slate-400 block">صافي ربح الشهر</span>
+                        <span id="calMonthNetPnL" class="text-base font-black text-emerald-400 num-ltr">+0.00 $</span>
+                    </div>
+                    <div class="h-7 w-px bg-slate-800"></div>
+                    <div>
+                        <span class="text-[11px] text-slate-400 block">أيام رابحة / خاسرة</span>
+                        <span class="text-sm font-extrabold">
+                            <span id="calWinDays" class="text-emerald-400">0</span> / <span id="calLossDays" class="text-red-400">0</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- دليل ألوان التقويم -->
+                <div class="flex flex-wrap items-center gap-3 text-xs font-bold">
+                    <span class="flex items-center gap-1.5 text-emerald-400"><span class="w-3 h-3 rounded bg-emerald-500/40 border border-emerald-400"></span> يوم رابح</span>
+                    <span class="flex items-center gap-1.5 text-red-400"><span class="w-3 h-3 rounded bg-red-500/40 border border-red-400"></span> يوم خاسر</span>
+                    <span class="flex items-center gap-1.5 text-slate-200"><span class="w-3 h-3 rounded bg-white/15 border border-white/40"></span> بدون تداول</span>
+                    <span class="flex items-center gap-1.5 text-amber-300"><i class="fa-solid fa-lock text-[10px]"></i> عطلة السوق (سبت/أحد)</span>
+                </div>
+            </div>
+
+            <!-- شبكة التقويم الشهرية -->
+            <div class="glass-card rounded-3xl p-4 sm:p-6">
+                <!-- أسماء أيام الأسبوع -->
+                <div class="grid grid-cols-7 gap-2 sm:gap-3 mb-3 text-center">
+                    <div class="py-2 text-xs font-extrabold text-slate-400">الإثنين</div>
+                    <div class="py-2 text-xs font-extrabold text-slate-400">الثلاثاء</div>
+                    <div class="py-2 text-xs font-extrabold text-slate-400">الأربعاء</div>
+                    <div class="py-2 text-xs font-extrabold text-slate-400">الخميس</div>
+                    <div class="py-2 text-xs font-extrabold text-slate-400">الجمعة</div>
+                    <div class="py-2 text-xs font-extrabold text-amber-400/90 flex items-center justify-center gap-1"><i class="fa-solid fa-lock text-[10px]"></i> السبت</div>
+                    <div class="py-2 text-xs font-extrabold text-amber-400/90 flex items-center justify-center gap-1"><i class="fa-solid fa-lock text-[10px]"></i> الأحد</div>
+                </div>
+
+                <!-- خلايا الأيام -->
+                <div id="calendarGrid" class="grid grid-cols-7 gap-2 sm:gap-3">
+                    <!-- تُحقن ديناميكياً -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- 3. قسم التقييم الشامل متعدد الفترات (يومي/أسبوعي/شهري/سنوي)  -->
+        <!-- ============================================================ -->
+        <section id="view-analytics" class="hidden space-y-6 animate-slide-up">
+            
+            <!-- شريط اختيار الفترة الزمنية للتقييم -->
+            <div class="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-filter"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-black text-white">تقييم الأداء والصفقات حسب الفترة</h2>
+                        <p id="periodRangeSubtitle" class="text-xs text-slate-400">عرض شامل لجميع البيانات</p>
+                    </div>
+                </div>
+
+                <!-- أزرار التبديل: يومي / أسبوعي / شهري / سنوي / الكل -->
+                <div class="flex flex-wrap items-center bg-[#070b14] p-1.5 rounded-2xl border border-slate-800 gap-1">
+                    <button onclick="setAnalyticsPeriod('daily')" id="period-daily" class="period-btn px-4 py-2 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white">يومي</button>
+                    <button onclick="setAnalyticsPeriod('weekly')" id="period-weekly" class="period-btn px-4 py-2 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white">أسبوعي</button>
+                    <button onclick="setAnalyticsPeriod('monthly')" id="period-monthly" class="period-btn px-4 py-2 rounded-xl text-xs font-extrabold transition bg-blue-600 text-white shadow">شهري</button>
+                    <button onclick="setAnalyticsPeriod('yearly')" id="period-yearly" class="period-btn px-4 py-2 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white">سنوي</button>
+                    <button onclick="setAnalyticsPeriod('all')" id="period-all" class="period-btn px-4 py-2 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white">الكل</button>
+                </div>
+            </div>
+
+            <!-- بطاقات مؤشرات الأداء الرئيسية (KPIs) للفترة المختارة -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="glass-card glass-card-hover rounded-2xl p-4">
+                    <span class="text-xs text-slate-400 block mb-1">صافي ربح / خسارة الفترة</span>
+                    <div id="statPeriodNetPnL" class="text-xl font-black text-emerald-400 num-ltr">+0.00 $</div>
+                    <span id="statPeriodGrowth" class="text-[11px] text-emerald-300 mt-1 block num-ltr">+0.00% نمو</span>
+                </div>
+
+                <div class="glass-card glass-card-hover rounded-2xl p-4">
+                    <span class="text-xs text-slate-400 block mb-1">نسبة النجاح (Win Rate)</span>
+                    <div id="statWinRate" class="text-xl font-black text-white num-ltr">0%</div>
+                    <span id="statWinLossRatio" class="text-[11px] text-slate-400 mt-1 block">0 رابحة / 0 خاسرة</span>
+                </div>
+
+                <div class="glass-card glass-card-hover rounded-2xl p-4">
+                    <span class="text-xs text-slate-400 block mb-1">عامل الربح (Profit Factor)</span>
+                    <div id="statProfitFactor" class="text-xl font-black text-blue-400 num-ltr">0.00</div>
+                    <span class="text-[11px] text-slate-400 mt-1 block">نسبة الأرباح للخسائر</span>
+                </div>
+
+                <div class="glass-card glass-card-hover rounded-2xl p-4">
+                    <span class="text-xs text-slate-400 block mb-1">أفضل حجم لوت</span>
+                    <div id="statBestLot" class="text-xl font-black text-amber-400 num-ltr">-</div>
+                    <span id="statBestLotPnL" class="text-[11px] text-slate-400 mt-1 block">-</span>
+                </div>
+
+                <div class="glass-card glass-card-hover rounded-2xl p-4 col-span-2 lg:col-span-1 border border-red-500/20">
+                    <span class="text-xs text-slate-400 block mb-1">تكلفة عدم الالتزام</span>
+                    <div id="statIndisciplineCost" class="text-xl font-black text-red-400 num-ltr">0.00 $</div>
+                    <span id="statIndisciplineCount" class="text-[11px] text-slate-400 mt-1 block">0 صفقات مخالفة</span>
+                </div>
+            </div>
+
+            <h3 class="text-base font-black text-white flex items-center gap-2"><i class="fa-solid fa-microscope text-indigo-400"></i><span>مؤشرات متقدمة</span></h3>
+            <div id="extraStats" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
+
+            <!-- منحنى نمو الرصيد + تحليل اللوت والأزواج -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-8 glass-card rounded-2xl p-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i>
+                                <span>منحنى نمو الرصيد (Equity Curve)</span>
+                            </h3>
+                            <p class="text-xs text-slate-400">تطور الأداء التراكمي خلال الفترة المختارة</p>
+                        </div>
+                    </div>
+                    <div class="relative h-72 w-full">
+                        <canvas id="equityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4 space-y-5">
+                    <div class="glass-card rounded-2xl p-5">
+                        <h3 class="text-sm font-black text-white mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-blue-400"></i>
+                            <span>الأداء حسب حجم اللوت</span>
+                        </h3>
+                        <div id="lotBreakdownContainer" class="space-y-2.5 max-h-44 overflow-y-auto pr-1"></div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-5">
+                        <h3 class="text-sm font-black text-white mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-coins text-amber-400"></i>
+                            <span>الأداء حسب الزوج</span>
+                        </h3>
+                        <div id="pairBreakdownContainer" class="space-y-2.5 max-h-44 overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- سجل كل الصفقات المفتوحة والمغلقة ضمن الفترة المختارة -->
+            <div class="glass-card rounded-2xl p-5 sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-base font-black text-white flex items-center gap-2">
+                            <i class="fa-solid fa-table-list text-blue-400"></i>
+                            <span>سجل الصفقات التفصيلي للفترة المختارة</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">انقر على أي صفقة لفتح بطاقتها الكاملة ومعاينة صورة الشارت المرفقة</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="analyticsStatusFilter" onchange="renderAnalytics()" class="bg-[#070b14] border border-slate-700 text-xs font-bold text-white rounded-xl px-3 py-2 focus:outline-none">
+                            <option value="all">كل الصفقات (المفتوحة والمغلقة)</option>
+                            <option value="open">الصفقات المفتوحة فقط</option>
+                            <option value="closed">الصفقات المغلقة فقط</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 text-slate-400 text-xs">
+                                <th class="py-3 px-3 font-bold">التاريخ</th>
+                                <th class="py-3 px-3 font-bold">الحالة</th>
+                                <th class="py-3 px-3 font-bold">الزوج</th>
+                                <th class="py-3 px-3 font-bold">اللوت</th>
+                                <th class="py-3 px-3 font-bold">النوع</th>
+                                <th class="py-3 px-3 font-bold">السبب الفني</th>
+                                <th class="py-3 px-3 font-bold text-center">الشارت</th>
+                                <th class="py-3 px-3 font-bold">النتيجة ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="periodTradesTableBody" class="divide-y divide-slate-800/60 text-sm">
+                            <!-- تُحقن ديناميكياً -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- نافذة فتح يوم تداول جديد -->
+    <div id="newDayModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-40 hidden items-center justify-center p-4 animate-fade-in">
+        <div class="bg-[#0f1626] border border-slate-700/80 rounded-3xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-black text-white flex items-center gap-2">
+                    <i class="fa-regular fa-calendar-plus text-blue-400"></i>
+                    <span>فتح صفحة يوم تداول</span>
+                </h3>
+                <button onclick="closeNewDayModal()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form onsubmit="createNewDay(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1.5">التاريخ</label>
+                    <input type="date" id="newDayDate" required onchange="autoFillArabicDayName(this.value)" class="w-full bg-[#070b14] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 num-ltr">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1.5">اسم اليوم</label>
+                    <input type="text" id="newDayName" required placeholder="مثال: يوم الأربعاء" class="w-full bg-[#070b14] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-300 block mb-1.5">الرصيد الافتتاحي ($) <span class="text-slate-500 font-normal">(تلقائي من آخر رصيد)</span></label>
+                    <input type="number" step="any" id="newDayStartBalance" required class="w-full bg-[#070b14] border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm font-black text-emerald-400 focus:outline-none focus:border-blue-500 num-ltr">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeNewDayModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold">إلغاء</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-extrabold shadow-lg shadow-blue-600/25">فتح الصفحة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- التذييل -->
+    <footer class="border-t border-slate-800/60 py-4 px-4 text-center text-xs text-slate-500">
+        سجل المتداول ELITE &bull; مصمم لرفع انضباطك وتطوير نتائجك في الأسواق المالية
+    </footer>
+
+    <!-- السكربت البرمجي الكامل -->
+    <script>
+        const STORAGE_KEY = 'trader_journal_elite_v2';
+
+        // بيانات تجريبية غنية تتضمن يوم الثلاثاء 24/11/2026 من دفتر المستخدم + أيام أخرى في نوفمبر 2026 لإبراز التقويم والتقييمات
+        const defaultData = {
+            currentDayId: 'day-2026-11-24',
+            dailyTarget: 500,
+            dailyMaxLoss: 300,
+            days: [
+                {
+                    id: 'day-2026-11-18',
+                    date: '2026-11-18',
+                    dayName: 'يوم الأربعاء',
+                    startingBalance: 9400,
+                    mood: 'مركز وهادئ',
+                    notes: 'يوم ممتاز على الذهب مع افتتاح جلسة نيويورك.',
+                    trades: [
+                        { id: 't101', lot: 0.25, pair: 'XAU/USD', direction: 'شراء', setup: 'كسر جلسة', status: 'closed', disciplined: true, pnl: 280.00, image: '' },
+                        { id: 't102', lot: 0.25, pair: 'EUR/USD', direction: 'بيع', setup: 'إعادة اختبار يومي', status: 'closed', disciplined: true, pnl: 140.00, image: '' }
+                    ]
+                },
+                {
+                    id: 'day-2026-11-19',
+                    date: '2026-11-19',
+                    dayName: 'يوم الخميس',
+                    startingBalance: 9820,
+                    mood: 'متوتر',
+                    notes: 'تذبذب عالي قبل الأخبار، التزمت بحد الخسارة وتوقفت عن التداول.',
+                    trades: [
+                        { id: 't103', lot: 0.50, pair: 'XAU/USD', direction: 'بيع', setup: 'خبر / تذبذب', status: 'closed', disciplined: false, pnl: -195.00, image: '' },
+                        { id: 't104', lot: 0.25, pair: 'USD/JPY', direction: 'شراء', setup: 'سحب سيولة', status: 'closed', disciplined: true, pnl: 75.00, image: '' }
+                    ]
+                },
+                {
+                    id: 'day-2026-11-20',
+                    date: '2026-11-20',
+                    dayName: 'يوم الجمعة',
+                    startingBalance: 9700,
+                    mood: 'مرتاح',
+                    notes: 'إغلاق أسبوعي هادئ بصفقة واحدة نظيفة.',
+                    trades: [
+                        { id: 't105', lot: 0.25, pair: 'XAU/USD', direction: 'شراء', setup: 'استمرار اتجاه', status: 'closed', disciplined: true, pnl: 100.00, image: '' }
+                    ]
+                },
+                {
+                    id: 'day-2026-11-24',
+                    date: '2026-11-24',
+                    dayName: 'يوم الثلاثاء',
+                    startingBalance: 9800,
+                    mood: 'مركز وهادئ',
+                    notes: 'البداية بلوت 0.50 ثم التثبيت على لوت 0.25 أعطى أريحية نفسية ونتائج قوية جداً.',
+                    trades: [
+                        { id: 't1', lot: 0.50, pair: 'XAU/USD', direction: 'شراء', setup: 'كسر جلسة', status: 'closed', disciplined: true, pnl: 81.65, image: '' },
+                        { id: 't2', lot: 0.25, pair: 'XAU/USD', direction: 'شراء', setup: 'إعادة اختبار يومي', status: 'closed', disciplined: true, pnl: 193.25, image: '' },
+                        { id: 't3', lot: 0.25, pair: 'XAU/USD', direction: 'بيع', setup: 'سحب سيولة', status: 'closed', disciplined: true, pnl: 115.50, image: '' },
+                        { id: 't4', lot: 0.25, pair: 'EUR/USD', direction: 'شراء', setup: 'استمرار اتجاه', status: 'closed', disciplined: true, pnl: 153.50, image: '' },
+                        { id: 't5', lot: 0.25, pair: 'XAU/USD', direction: 'شراء', setup: 'كسر جلسة', status: 'closed', disciplined: true, pnl: 214.00, image: '' }
+                    ]
+                },
+                {
+                    id: 'day-2026-11-25',
+                    date: '2026-11-25',
+                    dayName: 'يوم الأربعاء',
+                    startingBalance: 10557.90,
+                    mood: 'مركز وهادئ',
+                    notes: 'صفقة سوينغ مفتوحة على الذهب بانتظار هدف السيولة اليومية.',
+                    trades: [
+                        { id: 't6', lot: 0.25, pair: 'XAU/USD', direction: 'شراء', setup: 'إعادة اختبار يومي', status: 'open', disciplined: true, pnl: 65.00, image: '' }
+                    ]
+                }
+            ]
+        };
+
+        let appState = loadData();
+        let currentUploadedImageBase64 = '';
+        let calYear = 2026;
+        let calMonth = 10; // 0-indexed: 10 = نوفمبر
+        let currentAnalyticsPeriod = 'monthly';
+        let equityChartInstance = null;
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && Array.isArray(parsed.days) && parsed.days.length > 0) {
+                        return parsed;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return JSON.parse(JSON.stringify(defaultData));
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                showToast('مساحة التخزين ممتلئة، حاول تقليل حجم الصور المرفقة', 'error');
+            }
+        }
+
+        function getCurrentDay() {
+            let day = appState.days.find(d => d.id === appState.currentDayId);
+            if (!day && appState.days.length > 0) {
+                day = appState.days[appState.days.length - 1];
+                appState.currentDayId = day.id;
+            }
+            return day;
+        }
+
+        function formatCurrency(num, showSign = false) {
+            const val = Number(num) || 0;
+            const formatted = Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            if (showSign) {
+                return (val > 0 ? '+' : val < 0 ? '-' : '') + formatted + ' $';
+            }
+            return (val < 0 ? '-' : '') + formatted + ' $';
+        }
+
+        function isWeekendDate(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            const dayOfWeek = d.getDay(); // 0 = الأحد, 6 = السبت
+            return dayOfWeek === 0 || dayOfWeek === 6;
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const colors = type === 'error'
+                ? 'bg-red-950/95 border-red-500/50 text-red-200'
+                : 'bg-slate-900/95 border-emerald-500/50 text-emerald-200';
+            const icon = type === 'error' ? 'fa-circle-exclamation text-red-400' : 'fa-circle-check text-emerald-400';
+
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-2xl text-xs font-extrabold backdrop-blur-md transition-all transform translate-y-2 opacity-0 ${colors}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i><span>${message}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function showConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMessage').textContent = message;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            const okBtn = document.getElementById('confirmOkBtn');
+            const cancelBtn = document.getElementById('confirmCancelBtn');
+
+            const cleanup = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                okBtn.onclick = null;
+                cancelBtn.onclick = null;
+            };
+
+            cancelBtn.onclick = cleanup;
+            okBtn.onclick = () => {
+                cleanup();
+                onConfirm();
+            };
+        }
+
+        // ==========================================
+        // التنقل بين التبويبات الرئيسية
+        // ==========================================
+        function switchTab(tabName) {
+            const views = ['journal', 'calendar', 'analytics'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                const btn = document.getElementById(`tab-${v}`);
+                if (v === tabName) {
+                    el.classList.remove('hidden');
+                    btn.className = 'tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/25';
+                } else {
+                    el.classList.add('hidden');
+                    btn.className = 'tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all text-slate-400 hover:text-white';
+                }
+            });
+
+            if (tabName === 'journal') renderJournal();
+            if (tabName === 'calendar') renderCalendar();
+            if (tabName === 'analytics') renderAnalytics();
+        }
+
+        // ==========================================
+        // 1. منطق السجل اليومي والصفقات المفتوحة
+        // ==========================================
+        function renderJournal() {
+            const day = getCurrentDay();
+            if (!day) return;
+
+            // تحديث شارة الصفقات المفتوحة في الهيدر + البانر
+            updateOpenTradesBanner();
+
+            // القائمة المنسدلة للأيام
+            const selector = document.getElementById('daySelector');
+            selector.innerHTML = '';
+            const sortedDays = [...appState.days].sort((a, b) => b.date.localeCompare(a.date));
+            sortedDays.forEach(d => {
+                const closedPnL = d.trades.filter(t => t.status !== 'open').reduce((s, t) => s + Number(t.pnl), 0);
+                const sign = closedPnL >= 0 ? '+' : '';
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = `${d.dayName} (${d.date}) | ${sign}${closedPnL.toFixed(2)}$`;
+                if (d.id === day.id) opt.selected = true;
+                selector.appendChild(opt);
+            });
+
+            // تنبيه عطلة السوق إذا كان اليوم سبت أو أحد
+            const weekendBadge = document.getElementById('weekendWarningBadge');
+            if (isWeekendDate(day.date)) {
+                weekendBadge.classList.remove('hidden');
+            } else {
+                weekendBadge.classList.add('hidden');
+            }
+
+            document.getElementById('displayDayName').textContent = day.dayName;
+            document.getElementById('displayDate').textContent = day.date;
+            document.getElementById('startingBalanceInput').value = day.startingBalance;
+            document.getElementById('dayNotesInput').value = day.notes || '';
+            document.getElementById('dailyTargetInput').value = appState.dailyTarget || 500;
+            document.getElementById('dailyMaxLossInput').value = appState.dailyMaxLoss || 300;
+
+            // أزرار الحالة النفسية
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                if (btn.dataset.mood === day.mood) {
+                    btn.className = 'mood-btn text-xs font-extrabold py-2.5 px-2.5 rounded-xl border border-blue-500 bg-blue-500/20 text-white transition flex items-center justify-center gap-1.5 shadow';
+                } else {
+                    btn.className = 'mood-btn text-xs font-bold py-2.5 px-2.5 rounded-xl border border-slate-800 bg-[#070b14] text-slate-400 hover:border-slate-600 transition flex items-center justify-center gap-1.5';
+                }
+            });
+
+            // الحسابات اليومية (الصفقات المغلقة)
+            const closedTrades = day.trades.filter(t => t.status !== 'open');
+            const netPnL = closedTrades.reduce((sum, t) => sum + Number(t.pnl), 0);
+            const endingBalance = Number(day.startingBalance) + netPnL;
+            const growthPct = day.startingBalance > 0 ? (netPnL / day.startingBalance) * 100 : 0;
+            const wins = closedTrades.filter(t => Number(t.pnl) > 0).length;
+            const losses = closedTrades.filter(t => Number(t.pnl) < 0).length;
+
+            const netEl = document.getElementById('dayNetPnL');
+            netEl.textContent = formatCurrency(netPnL, true);
+            netEl.className = `text-lg font-black num-ltr ${netPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+            document.getElementById('dayEndingBalance').textContent = formatCurrency(endingBalance);
+
+            const pctEl = document.getElementById('dayGrowthPct');
+            pctEl.textContent = `${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(2)}%`;
+            pctEl.className = `text-base font-black num-ltr ${growthPct >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+            document.getElementById('dayTradesCountBadge').textContent = `${day.trades.length} عمليات`;
+
+            // شارة حالة اليوم
+            const statusBadge = document.getElementById('dayStatusBadge');
+            if (netPnL > 0) {
+                statusBadge.className = 'px-4 py-2 rounded-xl border border-emerald-500/40 bg-emerald-500/15 text-emerald-400 flex items-center gap-2 font-black text-sm shadow-lg shadow-emerald-500/10';
+                statusBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>يوم رابح</span>`;
+            } else if (netPnL < 0) {
+                statusBadge.className = 'px-4 py-2 rounded-xl border border-red-500/40 bg-red-500/15 text-red-400 flex items-center gap-2 font-black text-sm shadow-lg shadow-red-500/10';
+                statusBadge.innerHTML = `<i class="fa-solid fa-circle-xmark"></i><span>يوم خاسر</span>`;
+            } else {
+                statusBadge.className = 'px-4 py-2 rounded-xl border border-slate-700 bg-slate-800/80 text-slate-300 flex items-center gap-2 font-extrabold text-sm';
+                statusBadge.innerHTML = `<i class="fa-solid fa-minus"></i><span>بدون صافي</span>`;
+            }
+
+            // تحديث شريط حارس الهدف والخسارة
+            updateRiskGuardBar(netPnL);
+
+            // تعبئة جدول الصفقات
+            const tbody = document.getElementById('tradesTableBody');
+            tbody.innerHTML = '';
+
+            if (day.trades.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="py-12 text-center text-slate-500 text-sm">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-600"></i>
+                            لا توجد صفقات مسجلة في هذا اليوم بعد.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                day.trades.forEach((trade, idx) => {
+                    const isOpen = trade.status === 'open';
+                    const isWin = Number(trade.pnl) >= 0;
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-800/45 transition cursor-pointer group';
+                    tr.onclick = (e) => {
+                        if (!e.target.closest('button')) {
+                            openTradeDetailModal(day.id, trade.id);
+                        }
+                    };
+                    tr.innerHTML = `
+                        <td class="py-3.5 px-2 text-xs font-bold text-slate-500">${idx + 1}</td>
+                        <td class="py-3.5 px-2.5">
+                            ${isOpen
+                                ? '<span class="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> مفتوحة</span>'
+                                : '<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300">مغلقة</span>'
+                            }
+                        </td>
+                        <td class="py-3.5 px-2.5 font-black text-white num-ltr">${Number(trade.lot).toFixed(2)}</td>
+                        <td class="py-3.5 px-2.5 font-extrabold text-amber-300 text-xs num-ltr">${escapeHTML(trade.pair)}</td>
+                        <td class="py-3.5 px-2.5">
+                            <span class="text-xs font-extrabold px-2 py-0.5 rounded-md ${trade.direction === 'شراء' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}">
+                                ${escapeHTML(trade.direction)}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-2.5 text-xs text-slate-300">${escapeHTML(trade.setup)}</td>
+                        <td class="py-3.5 px-2.5 text-center">
+                            ${trade.image
+                                ? '<span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30" title="توجد صورة شارت - اضغط للمعاينة"><i class="fa-regular fa-image"></i></span>'
+                                : '<span class="text-slate-600 text-xs">-</span>'
+                            }
+                        </td>
+                        <td class="py-3.5 px-2.5 font-black num-ltr ${isWin ? 'text-emerald-400' : 'text-red-400'}">
+                            ${formatCurrency(trade.pnl, true)}
+                        </td>
+                        <td class="py-3.5 px-2 text-center">
+                            <div class="flex items-center justify-center gap-1">
+                                ${isOpen ? `<button onclick="quickCloseTrade('${day.id}', '${trade.id}')" title="إغلاق الصفقة الآن" class="p-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white transition text-xs"><i class="fa-solid fa-check"></i></button>` : ''}
+                                <button onclick="editTrade('${trade.id}')" title="تعديل" class="p-1.5 rounded-lg bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white transition text-xs">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                <button onclick="deleteTrade('${trade.id}')" title="حذف" class="p-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white transition text-xs">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('footerCount').textContent = closedTrades.length;
+            document.getElementById('footerWins').textContent = wins;
+            document.getElementById('footerLosses').textContent = losses;
+            const footerNetEl = document.getElementById('footerNetPnL');
+            footerNetEl.textContent = formatCurrency(netPnL, true);
+            footerNetEl.className = `num-ltr text-base font-black ${netPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+        }
+
+        function updateRiskGuardBar(netPnL) {
+            const target = Number(appState.dailyTarget) || 500;
+            const maxLoss = Number(appState.dailyMaxLoss) || 300;
+            const bar = document.getElementById('riskGuardBar');
+            const text = document.getElementById('riskGuardStatusText');
+
+            if (netPnL >= 0) {
+                const pct = Math.min(100, (netPnL / target) * 100);
+                bar.style.width = `${pct}%`;
+                bar.className = 'h-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-500 rounded-full';
+                if (netPnL >= target) {
+                    text.textContent = `ممتاز! حققت هدفك اليومي (${pct.toFixed(0)}%) - حافظ على أرباحك`;
+                    text.className = 'font-extrabold text-emerald-400';
+                } else {
+                    text.textContent = `تقدم الهدف اليومي: ${pct.toFixed(0)}%`;
+                    text.className = 'font-bold text-blue-400';
+                }
+            } else {
+                const lossAbs = Math.abs(netPnL);
+                const pct = Math.min(100, (lossAbs / maxLoss) * 100);
+                bar.style.width = `${pct}%`;
+                bar.className = 'h-full bg-gradient-to-r from-amber-500 to-red-500 transition-all duration-500 rounded-full';
+                if (lossAbs >= maxLoss) {
+                    text.textContent = `تنبيه: وصلت إلى حد الخسارة اليومي! يُنصح بالتوقف لليوم`;
+                    text.className = 'font-black text-red-400 animate-pulse';
+                } else {
+                    text.textContent = `استهلاك حد الخسارة اليومي: ${pct.toFixed(0)}%`;
+                    text.className = 'font-bold text-amber-400';
+                }
+            }
+        }
+
+        function updateRiskLimits() {
+            appState.dailyTarget = parseFloat(document.getElementById('dailyTargetInput').value) || 500;
+            appState.dailyMaxLoss = parseFloat(document.getElementById('dailyMaxLossInput').value) || 300;
+            saveData();
+            renderJournal();
+        }
+
+        // تحديث شريط الصفقات المفتوحة
+        function updateOpenTradesBanner() {
+            const openList = [];
+            appState.days.forEach(d => {
+                d.trades.forEach(t => {
+                    if (t.status === 'open') {
+                        openList.push({ day: d, trade: t });
+                    }
+                });
+            });
+
+            const badge = document.getElementById('openTradesHeaderBadge');
+            const banner = document.getElementById('activeTradesBanner');
+            const container = document.getElementById('activeTradesList');
+
+            if (openList.length > 0) {
+                badge.textContent = openList.length;
+                badge.classList.remove('hidden');
+                banner.classList.remove('hidden');
+
+                container.innerHTML = openList.map(({ day, trade }) => {
+                    const isPos = Number(trade.pnl) >= 0;
+                    return `
+                        <div class="bg-[#070b14]/90 border border-slate-800 hover:border-amber-500/40 rounded-xl p-3 flex items-center justify-between gap-2 transition">
+                            <div class="cursor-pointer" onclick="openTradeDetailModal('${day.id}', '${trade.id}')">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-black text-amber-300 text-xs num-ltr">${escapeHTML(trade.pair)}</span>
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${trade.direction === 'شراء' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}">${trade.direction}</span>
+                                    <span class="text-[11px] text-slate-400 num-ltr">${Number(trade.lot).toFixed(2)} Lot</span>
+                                </div>
+                                <div class="text-[11px] text-slate-500 mt-1">${day.dayName} (${day.date})</div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-black num-ltr ${isPos ? 'text-emerald-400' : 'text-red-400'}">${formatCurrency(trade.pnl, true)}</span>
+                                <button onclick="quickCloseTrade('${day.id}', '${trade.id}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold transition shadow">
+                                    إغلاق
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                badge.classList.add('hidden');
+                banner.classList.add('hidden');
+            }
+        }
+
+        function quickCloseTrade(dayId, tradeId) {
+            const day = appState.days.find(d => d.id === dayId);
+            if (!day) return;
+            const trade = day.trades.find(t => t.id === tradeId);
+            if (!trade) return;
+            trade.status = 'closed';
+            saveData();
+            renderJournal();
+            showToast(`تم إغلاق صفقة ${trade.pair} واحتساب النتيجة`);
+        }
+
+        // معالجة رفع وضغط صورة الشارت
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // ضغط الصورة لتناسب التخزين المحلي بجودة ممتازة
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 900;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        } else {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    currentUploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.72);
+                    document.getElementById('imagePreviewTag').src = currentUploadedImageBase64;
+                    document.getElementById('imagePreviewBox').classList.remove('hidden');
+                    document.getElementById('clearImageBtn').classList.remove('hidden');
+                    document.getElementById('imageUploadLabel').textContent = 'تم إرفاق الشارت بنجاح';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearTradeImage() {
+            currentUploadedImageBase64 = '';
+            document.getElementById('tradeImageInput').value = '';
+            document.getElementById('imagePreviewBox').classList.add('hidden');
+            document.getElementById('clearImageBtn').classList.add('hidden');
+            document.getElementById('imageUploadLabel').textContent = 'اختر صورة الشارت...';
+        }
+
+        // نافذة معاينة الصفقة والصورة
+        function openTradeDetailModal(dayId, tradeId) {
+            const day = appState.days.find(d => d.id === dayId);
+            if (!day) return;
+            const trade = day.trades.find(t => t.id === tradeId);
+            if (!trade) return;
+
+            document.getElementById('modalTradePair').textContent = trade.pair;
+            const dirEl = document.getElementById('modalTradeDir');
+            dirEl.textContent = trade.direction;
+            dirEl.className = `text-xs font-extrabold px-2.5 py-1 rounded-lg ${trade.direction === 'شراء' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}`;
+
+            const stEl = document.getElementById('modalTradeStatus');
+            stEl.textContent = trade.status === 'open' ? 'صفقة مفتوحة' : 'صفقة مغلقة';
+            stEl.className = `text-xs font-extrabold px-2.5 py-1 rounded-lg ${trade.status === 'open' ? 'bg-amber-500/15 text-amber-300' : 'bg-blue-500/15 text-blue-400'}`;
+
+            document.getElementById('modalTradeDate').textContent = `${day.dayName} (${day.date})`;
+            document.getElementById('modalTradeLot').textContent = `${Number(trade.lot).toFixed(2)} Lot`;
+
+            const pnlEl = document.getElementById('modalTradePnL');
+            pnlEl.textContent = formatCurrency(trade.pnl, true);
+            pnlEl.className = `text-sm font-black num-ltr mt-0.5 block ${Number(trade.pnl) >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+            const discEl = document.getElementById('modalTradeDisc');
+            discEl.textContent = trade.disciplined ? 'نعم - ملتزم بالخطة' : 'لا - غير ملتزم';
+            discEl.className = `text-xs font-extrabold mt-0.5 block ${trade.disciplined ? 'text-emerald-400' : 'text-red-400'}`;
+
+            document.getElementById('modalTradeSetup').textContent = trade.setup;
+
+            const imgContainer = document.getElementById('modalTradeImageContainer');
+            if (trade.image) {
+                imgContainer.innerHTML = `<img src="${trade.image}" alt="صورة الشارت" class="w-full max-h-[450px] object-contain">`;
+            } else {
+                imgContainer.innerHTML = `
+                    <div class="py-10 text-center text-slate-500 text-xs">
+                        <i class="fa-regular fa-image text-3xl mb-2 block text-slate-700"></i>
+                        لم يتم إرفاق صورة شارت لهذه الصفقة
+                    </div>
+                `;
+            }
+
+            const modal = document.getElementById('tradeDetailModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTradeDetailModal() {
+            const modal = document.getElementById('tradeDetailModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // دوال التحكم بالنموذج
+        function setTradeStatus(status) {
+            document.getElementById('tradeStatus').value = status;
+            const closedBtn = document.getElementById('statusClosedBtn');
+            const openBtn = document.getElementById('statusOpenBtn');
+            const pnlLabel = document.getElementById('pnlInputLabel');
+
+            if (status === 'closed') {
+                closedBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition bg-blue-600 text-white shadow';
+                openBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition text-slate-400 hover:text-white';
+                pnlLabel.textContent = 'الربح / الخسارة ($)';
+            } else {
+                openBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition bg-amber-500 text-slate-950 shadow';
+                closedBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition text-slate-400 hover:text-white';
+                pnlLabel.textContent = 'الربح العائم الحالي ($)';
+            }
+        }
+
+        function setQuickLot(val) { document.getElementById('tradeLot').value = val; }
+        function setQuickPair(val) { document.getElementById('tradePair').value = val; }
+
+        function setTradeDirection(dir) {
+            document.getElementById('tradeDirection').value = dir;
+            const buyBtn = document.getElementById('dirBuyBtn');
+            const sellBtn = document.getElementById('dirSellBtn');
+            if (dir === 'شراء') {
+                buyBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition bg-emerald-600 text-white';
+                sellBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition text-slate-400 hover:text-white';
+            } else {
+                sellBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition bg-rose-600 text-white';
+                buyBtn.className = 'py-1.5 rounded-lg text-xs font-extrabold transition text-slate-400 hover:text-white';
+            }
+        }
+
+        function setTradeDiscipline(isDisc) {
+            document.getElementById('tradeDiscipline').value = isDisc ? 'true' : 'false';
+            const yesBtn = document.getElementById('discYesBtn');
+            const noBtn = document.getElementById('discNoBtn');
+            if (isDisc) {
+                yesBtn.className = 'py-2 px-3 rounded-xl border border-emerald-500/50 bg-emerald-500/15 text-emerald-400 text-xs font-extrabold flex items-center justify-center gap-1.5 transition';
+                noBtn.className = 'py-2 px-3 rounded-xl border border-slate-700 bg-[#070b14] text-slate-400 text-xs font-extrabold flex items-center justify-center gap-1.5 transition';
+            } else {
+                noBtn.className = 'py-2 px-3 rounded-xl border border-red-500/50 bg-red-500/15 text-red-400 text-xs font-extrabold flex items-center justify-center gap-1.5 transition';
+                yesBtn.className = 'py-2 px-3 rounded-xl border border-slate-700 bg-[#070b14] text-slate-400 text-xs font-extrabold flex items-center justify-center gap-1.5 transition';
+            }
+        }
+
+        function handleTradeSubmit(e) {
+            e.preventDefault();
+            const day = getCurrentDay();
+            if (!day) return;
+
+            const editId = document.getElementById('editTradeId').value;
+            const status = document.getElementById('tradeStatus').value;
+            const lot = parseFloat(document.getElementById('tradeLot').value);
+            const pair = document.getElementById('tradePair').value.trim().toUpperCase();
+            const pnlRaw = document.getElementById('tradePnL').value;
+            const pnl = pnlRaw === '' ? 0 : parseFloat(pnlRaw);
+            const direction = document.getElementById('tradeDirection').value;
+            const setup = document.getElementById('tradeSetup').value;
+            const disciplined = document.getElementById('tradeDiscipline').value === 'true';
+
+            if (isNaN(lot) || lot <= 0 || isNaN(pnl) || !pair) {
+                showToast('يرجى إدخال حجم اللوت والزوج والنتيجة بشكل صحيح', 'error');
+                return;
+            }
+
+            if (editId) {
+                const idx = day.trades.findIndex(t => t.id === editId);
+                if (idx !== -1) {
+                    const existingImg = day.trades[idx].image || '';
+                    day.trades[idx] = {
+                        id: editId,
+                        lot,
+                        pair,
+                        direction,
+                        setup,
+                        status,
+                        disciplined,
+                        pnl,
+                        image: currentUploadedImageBase64 || existingImg
+                    };
+                    showToast('تم تحديث بيانات الصفقة بنجاح');
+                }
+            } else {
+                day.trades.push({
+                    id: 't-' + Date.now(),
+                    lot,
+                    pair,
+                    direction,
+                    setup,
+                    status,
+                    disciplined,
+                    pnl,
+                    image: currentUploadedImageBase64
+                });
+                showToast(status === 'open' ? 'تم تسجيل الصفقة المفتوحة' : 'تمت إضافة الصفقة إلى سجل اليوم');
+            }
+
+            saveData();
+            resetTradeForm();
+            renderJournal();
+        }
+
+        function editTrade(tradeId) {
+            const day = getCurrentDay();
+            const trade = day.trades.find(t => t.id === tradeId);
+            if (!trade) return;
+
+            document.getElementById('editTradeId').value = trade.id;
+            document.getElementById('tradeLot').value = trade.lot;
+            document.getElementById('tradePair').value = trade.pair;
+            document.getElementById('tradePnL').value = trade.pnl;
+            document.getElementById('tradeSetup').value = trade.setup;
+            setTradeStatus(trade.status || 'closed');
+            setTradeDirection(trade.direction);
+            setTradeDiscipline(trade.disciplined);
+
+            if (trade.image) {
+                currentUploadedImageBase64 = trade.image;
+                document.getElementById('imagePreviewTag').src = trade.image;
+                document.getElementById('imagePreviewBox').classList.remove('hidden');
+                document.getElementById('clearImageBtn').classList.remove('hidden');
+                document.getElementById('imageUploadLabel').textContent = 'تغيير صورة الشارت...';
+            } else {
+                clearTradeImage();
+            }
+
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-blue-400"></i><span>تعديل الصفقة</span>`;
+            document.getElementById('submitTradeBtn').innerHTML = `<i class="fa-solid fa-check"></i><span>حفظ التعديلات</span>`;
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+        }
+
+        function resetTradeForm() {
+            document.getElementById('editTradeId').value = '';
+            document.getElementById('tradePnL').value = '';
+            setTradeStatus('closed');
+            setTradeDirection('شراء');
+            setTradeDiscipline(true);
+            clearTradeImage();
+
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-bolt text-amber-400"></i><span>تسجيل صفقة جديدة</span>`;
+            document.getElementById('submitTradeBtn').innerHTML = `<i class="fa-solid fa-plus-circle"></i><span>حفظ الصفقة في السجل</span>`;
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+        }
+
+        function deleteTrade(tradeId) {
+            const day = getCurrentDay();
+            day.trades = day.trades.filter(t => t.id !== tradeId);
+            saveData();
+            renderJournal();
+            showToast('تم حذف الصفقة');
+        }
+
+        function updateStartingBalance(val) {
+            const day = getCurrentDay();
+            const num = parseFloat(val);
+            if (!isNaN(num) && num >= 0) {
+                day.startingBalance = num;
+                saveData();
+                renderJournal();
+                showToast('تم تحديث الرصيد الافتتاحي');
+            }
+        }
+
+        function setDayMood(mood) {
+            const day = getCurrentDay();
+            day.mood = mood;
+            saveData();
+            renderJournal();
+        }
+
+        function updateDayNotes(notes) {
+            const day = getCurrentDay();
+            day.notes = notes;
+            saveData();
+            showToast('تم حفظ خلاصة اليوم');
+        }
+
+        function selectDay(dayId) {
+            appState.currentDayId = dayId;
+            saveData();
+            resetTradeForm();
+            renderJournal();
+        }
+
+        function openNewDayModal() {
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            document.getElementById('newDayDate').value = dateStr;
+            autoFillArabicDayName(dateStr);
+
+            const sorted = [...appState.days].sort((a, b) => a.date.localeCompare(b.date));
+            const lastDay = sorted[sorted.length - 1];
+            let suggestedBalance = 10000;
+            if (lastDay) {
+                const lastNet = lastDay.trades.filter(t => t.status !== 'open').reduce((s, t) => s + Number(t.pnl), 0);
+                suggestedBalance = Number((Number(lastDay.startingBalance) + lastNet).toFixed(2));
+            }
+            document.getElementById('newDayStartBalance').value = suggestedBalance;
+
+            const modal = document.getElementById('newDayModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeNewDayModal() {
+            const modal = document.getElementById('newDayModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function autoFillArabicDayName(dateStr) {
+            if (!dateStr) return;
+            const daysAr = ['يوم الأحد', 'يوم الاثنين', 'يوم الثلاثاء', 'يوم الأربعاء', 'يوم الخميس', 'يوم الجمعة', 'يوم السبت'];
+            const d = new Date(dateStr + 'T00:00:00');
+            if (!isNaN(d.getTime())) {
+                document.getElementById('newDayName').value = daysAr[d.getDay()];
+            }
+        }
+
+        function createNewDay(e) {
+            e.preventDefault();
+            const date = document.getElementById('newDayDate').value;
+            const dayName = document.getElementById('newDayName').value.trim();
+            const startingBalance = parseFloat(document.getElementById('newDayStartBalance').value) || 0;
+
+            const existing = appState.days.find(d => d.date === date);
+            if (existing) {
+                appState.currentDayId = existing.id;
+                closeNewDayModal();
+                renderJournal();
+                showToast('هذا التاريخ موجود مسبقاً، تم الانتقال إليه');
+                return;
+            }
+
+            const newId = 'day-' + Date.now();
+            appState.days.push({
+                id: newId,
+                date,
+                dayName,
+                startingBalance,
+                mood: 'مركز وهادئ',
+                notes: '',
+                trades: []
+            });
+            appState.currentDayId = newId;
+            saveData();
+            closeNewDayModal();
+            resetTradeForm();
+            renderJournal();
+            showToast(`تم فتح صفحة ${dayName}`);
+        }
+
+        function confirmDeleteCurrentDay() {
+            if (appState.days.length <= 1) {
+                showToast('يجب أن يبقى يوم واحد على الأقل في السجل', 'error');
+                return;
+            }
+            const day = getCurrentDay();
+            showConfirm('حذف صفحة اليوم', `هل تريد حذف سجل "${day.dayName} (${day.date})"؟`, () => {
+                appState.days = appState.days.filter(d => d.id !== day.id);
+                appState.currentDayId = appState.days[0].id;
+                saveData();
+                renderJournal();
+                showToast('تم حذف اليوم');
+            });
+        }
+
+        // ==========================================
+        // 2. منطق التقويم التفاعلي (P&L Calendar)
+        // ==========================================
+        function changeCalendarMonth(delta) {
+            calMonth += delta;
+            if (calMonth > 11) {
+                calMonth = 0;
+                calYear++;
+            } else if (calMonth < 0) {
+                calMonth = 11;
+                calYear--;
+            }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+            document.getElementById('calendarMonthTitle').textContent = `${monthsAr[calMonth]} ${calYear}`;
+            document.getElementById('calendarMonthSubtitle').textContent = `${calYear} - ${String(calMonth + 1).padStart(2, '0')}`;
+
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            // أول يوم في الشهر (نحوله ليبدأ الأسبوع من الإثنين = 0 ... الأحد = 6)
+            const firstDayObj = new Date(calYear, calMonth, 1);
+            let startOffset = firstDayObj.getDay() - 1;
+            if (startOffset < 0) startOffset = 6; // الأحد يصبح في العمود السابع
+
+            const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+            let monthNetPnL = 0;
+            let monthWinDays = 0;
+            let monthLossDays = 0;
+
+            // خلايا فارغة قبل بداية الشهر
+            for (let i = 0; i < startOffset; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'min-h-[85px] sm:min-h-[105px] rounded-2xl bg-[#070b14]/30 border border-slate-800/30';
+                grid.appendChild(emptyCell);
+            }
+
+            // خلايا أيام الشهر
+            for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+                const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                const dateObj = new Date(calYear, calMonth, dayNum);
+                const dayOfWeek = dateObj.getDay(); // 6 = السبت, 0 = الأحد
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+                const recordedDay = appState.days.find(d => d.date === dateStr);
+                const closedTrades = recordedDay ? recordedDay.trades.filter(t => t.status !== 'open') : [];
+                const hasTrades = closedTrades.length > 0;
+                const dayPnL = closedTrades.reduce((s, t) => s + Number(t.pnl), 0);
+
+                if (hasTrades) {
+                    monthNetPnL += dayPnL;
+                    if (dayPnL > 0) monthWinDays++;
+                    else if (dayPnL < 0) monthLossDays++;
+                }
+
+                let cellStyle = 'cal-neutral';
+                let contentHTML = '';
+
+                if (isWeekend && !hasTrades) {
+                    cellStyle = 'weekend-pattern border-amber-500/25';
+                    contentHTML = `
+                        <div class="mt-auto flex flex-col items-center justify-center text-center opacity-80">
+                            <i class="fa-solid fa-lock text-amber-400/80 text-xs mb-1"></i>
+                            <span class="text-[10px] font-extrabold text-amber-300/90 leading-tight">عطلة السوق</span>
+                        </div>
+                    `;
+                } else if (hasTrades) {
+                    if (dayPnL > 0) {
+                        cellStyle = 'cal-profit';
+                        contentHTML = `
+                            <div class="mt-auto">
+                                <div class="text-xs sm:text-sm font-black text-emerald-300 num-ltr">+${dayPnL.toFixed(0)}$</div>
+                                <div class="text-[10px] text-emerald-200/80 font-bold">${closedTrades.length} صفقات</div>
+                            </div>
+                        `;
+                    } else if (dayPnL < 0) {
+                        cellStyle = 'cal-loss';
+                        contentHTML = `
+                            <div class="mt-auto">
+                                <div class="text-xs sm:text-sm font-black text-red-300 num-ltr">${dayPnL.toFixed(0)}$</div>
+                                <div class="text-[10px] text-red-200/80 font-bold">${closedTrades.length} صفقات</div>
+                            </div>
+                        `;
+                    } else {
+                        contentHTML = `
+                            <div class="mt-auto">
+                                <div class="text-xs font-extrabold text-slate-200 num-ltr">0.00$</div>
+                                <div class="text-[10px] text-slate-400">تعادل</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    contentHTML = `
+                        <div class="mt-auto">
+                            <span class="text-[10px] text-slate-400/80 font-semibold">لا يوجد تداول</span>
+                        </div>
+                    `;
+                }
+
+                const cell = document.createElement('div');
+                cell.className = `min-h-[85px] sm:min-h-[105px] rounded-2xl border p-2 sm:p-3 flex flex-col justify-between cursor-pointer transition-all transform hover:-translate-y-1 ${cellStyle}`;
+                cell.onclick = () => openCalendarDay(dateStr);
+                cell.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs sm:text-sm font-black ${hasTrades ? 'text-white' : isWeekend ? 'text-amber-300/80' : 'text-slate-200'} num-ltr">${dayNum}</span>
+                        ${isWeekend ? '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold hidden sm:inline">عطلة</span>' : ''}
+                    </div>
+                    ${contentHTML}
+                `;
+                grid.appendChild(cell);
+            }
+
+            const netEl = document.getElementById('calMonthNetPnL');
+            netEl.textContent = formatCurrency(monthNetPnL, true);
+            netEl.className = `text-base font-black num-ltr ${monthNetPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+            document.getElementById('calWinDays').textContent = monthWinDays;
+            document.getElementById('calLossDays').textContent = monthLossDays;
+        }
+
+        function openCalendarDay(dateStr) {
+            let day = appState.days.find(d => d.date === dateStr);
+            if (!day) {
+                const daysAr = ['يوم الأحد', 'يوم الاثنين', 'يوم الثلاثاء', 'يوم الأربعاء', 'يوم الخميس', 'يوم الجمعة', 'يوم السبت'];
+                const d = new Date(dateStr + 'T00:00:00');
+                const sorted = [...appState.days].sort((a, b) => a.date.localeCompare(b.date));
+                const lastDay = sorted[sorted.length - 1];
+                const startBal = lastDay
+                    ? Number((Number(lastDay.startingBalance) + lastDay.trades.filter(t => t.status !== 'open').reduce((s, t) => s + Number(t.pnl), 0)).toFixed(2))
+                    : 10000;
+
+                day = {
+                    id: 'day-' + Date.now(),
+                    date: dateStr,
+                    dayName: daysAr[d.getDay()],
+                    startingBalance: startBal,
+                    mood: 'مركز وهادئ',
+                    notes: '',
+                    trades: []
+                };
+                appState.days.push(day);
+                saveData();
+                showToast(`تم فتح سجل ${day.dayName} (${dateStr})`);
+            }
+            appState.currentDayId = day.id;
+            switchTab('journal');
+        }
+
+        // ==========================================
+        // 3. منطق التقييم الشامل (يومي / أسبوعي / شهري / سنوي)
+        // ==========================================
+        function setAnalyticsPeriod(period) {
+            currentAnalyticsPeriod = period;
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.className = 'period-btn px-4 py-2 rounded-xl text-xs font-extrabold transition text-slate-400 hover:text-white';
+            });
+            document.getElementById(`period-${period}`).className = 'period-btn px-4 py-2 rounded-xl text-xs font-extrabold transition bg-blue-600 text-white shadow';
+            renderAnalytics();
+        }
+
+        function renderAnalytics() {
+            const currentDay = getCurrentDay();
+            const refDateStr = currentDay ? currentDay.date : '2026-11-25';
+            const refDate = new Date(refDateStr + 'T00:00:00');
+
+            let filteredDays = [...appState.days].sort((a, b) => a.date.localeCompare(b.date));
+            let subtitle = 'جميع الأيام والصفقات المسجلة في الحساب';
+
+            if (currentAnalyticsPeriod === 'daily') {
+                filteredDays = filteredDays.filter(d => d.date === refDateStr);
+                subtitle = `تقييم يوم محدد: ${currentDay ? currentDay.dayName : ''} (${refDateStr})`;
+            } else if (currentAnalyticsPeriod === 'weekly') {
+                // آخر 7 أيام من تاريخ الصفحة الحالية
+                const weekAgo = new Date(refDate);
+                weekAgo.setDate(refDate.getDate() - 6);
+                filteredDays = filteredDays.filter(d => {
+                    const dt = new Date(d.date + 'T00:00:00');
+                    return dt >= weekAgo && dt <= refDate;
+                });
+                subtitle = `التقييم الأسبوعي (آخر 7 أيام حتى ${refDateStr})`;
+            } else if (currentAnalyticsPeriod === 'monthly') {
+                const ym = refDateStr.slice(0, 7); // YYYY-MM
+                filteredDays = filteredDays.filter(d => d.date.startsWith(ym));
+                subtitle = `التقييم الشهري لشهر (${ym})`;
+            } else if (currentAnalyticsPeriod === 'yearly') {
+                const yr = refDateStr.slice(0, 4); // YYYY
+                filteredDays = filteredDays.filter(d => d.date.startsWith(yr));
+                subtitle = `التقييم السنوي لعام (${yr})`;
+            }
+
+            document.getElementById('periodRangeSubtitle').textContent = subtitle;
+
+            let periodAllTrades = [];
+            filteredDays.forEach(d => {
+                d.trades.forEach(t => {
+                    periodAllTrades.push({ ...t, date: d.date, dayName: d.dayName, dayId: d.id });
+                });
+            });
+
+            const closedTrades = periodAllTrades.filter(t => t.status !== 'open');
+            const initialBalance = filteredDays.length > 0 ? Number(filteredDays[0].startingBalance) : 0;
+            const netPnL = closedTrades.reduce((s, t) => s + Number(t.pnl), 0);
+            const growthPct = initialBalance > 0 ? (netPnL / initialBalance) * 100 : 0;
+
+            const wins = closedTrades.filter(t => Number(t.pnl) > 0);
+            const losses = closedTrades.filter(t => Number(t.pnl) < 0);
+            const winRate = closedTrades.length > 0 ? (wins.length / closedTrades.length) * 100 : 0;
+
+            const grossProfit = wins.reduce((s, t) => s + Number(t.pnl), 0);
+            const grossLoss = Math.abs(losses.reduce((s, t) => s + Number(t.pnl), 0));
+            const profitFactor = grossLoss > 0 ? (grossProfit / grossLoss).toFixed(2) : grossProfit > 0 ? '∞' : '0.00';
+
+            const indisciplined = closedTrades.filter(t => !t.disciplined);
+            renderExtraStats(closedTrades);
+            const indCost = indisciplined.reduce((s, t) => s + Number(t.pnl), 0);
+
+            // أفضل حجم لوت
+            const lotMap = {};
+            closedTrades.forEach(t => {
+                const k = Number(t.lot).toFixed(2);
+                if (!lotMap[k]) lotMap[k] = { lot: k, count: 0, wins: 0, pnl: 0 };
+                lotMap[k].count++;
+                if (Number(t.pnl) > 0) lotMap[k].wins++;
+                lotMap[k].pnl += Number(t.pnl);
+            });
+            const lotArr = Object.values(lotMap).sort((a, b) => b.pnl - a.pnl);
+
+            // تحديث البطاقات
+            const netEl = document.getElementById('statPeriodNetPnL');
+            netEl.textContent = formatCurrency(netPnL, true);
+            netEl.className = `text-xl font-black num-ltr ${netPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+            const grEl = document.getElementById('statPeriodGrowth');
+            grEl.textContent = `${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(2)}% نمو`;
+            grEl.className = `text-[11px] mt-1 block num-ltr font-bold ${growthPct >= 0 ? 'text-emerald-300' : 'text-red-300'}`;
+
+            document.getElementById('statWinRate').textContent = `${winRate.toFixed(1)}%`;
+            document.getElementById('statWinLossRatio').textContent = `${wins.length} رابحة / ${losses.length} خاسرة`;
+            document.getElementById('statProfitFactor').textContent = profitFactor;
+
+            if (lotArr[0]) {
+                document.getElementById('statBestLot').textContent = `${lotArr[0].lot} Lot`;
+                document.getElementById('statBestLotPnL').textContent = `${formatCurrency(lotArr[0].pnl, true)} (${lotArr[0].count} صفقات)`;
+            } else {
+                document.getElementById('statBestLot').textContent = '-';
+                document.getElementById('statBestLotPnL').textContent = 'لا توجد بيانات';
+            }
+
+            const indEl = document.getElementById('statIndisciplineCost');
+            indEl.textContent = formatCurrency(indCost, true);
+            indEl.className = `text-xl font-black num-ltr ${indCost < 0 ? 'text-red-400' : 'text-slate-300'}`;
+            document.getElementById('statIndisciplineCount').textContent = `${indisciplined.length} صفقات مخالفة`;
+
+            // تفاصيل اللوت
+            document.getElementById('lotBreakdownContainer').innerHTML = lotArr.length === 0
+                ? '<p class="text-xs text-slate-500">لا توجد صفقات مغلقة في هذه الفترة.</p>'
+                : lotArr.map(item => `
+                    <div class="bg-[#070b14] border border-slate-800/80 rounded-xl p-2.5 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-black text-white num-ltr">${item.lot} Lot</span>
+                            <span class="text-[11px] text-slate-400 mr-1.5">(${item.count} عمليات)</span>
+                        </div>
+                        <span class="text-xs font-black num-ltr ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}">${formatCurrency(item.pnl, true)}</span>
+                    </div>
+                `).join('');
+
+            // تفاصيل الأزواج
+            const pairMap = {};
+            closedTrades.forEach(t => {
+                const p = t.pair.toUpperCase();
+                if (!pairMap[p]) pairMap[p] = { pair: p, count: 0, pnl: 0 };
+                pairMap[p].count++;
+                pairMap[p].pnl += Number(t.pnl);
+            });
+            const pairArr = Object.values(pairMap).sort((a, b) => b.pnl - a.pnl);
+
+            document.getElementById('pairBreakdownContainer').innerHTML = pairArr.length === 0
+                ? '<p class="text-xs text-slate-500">لا توجد صفقات مغلقة في هذه الفترة.</p>'
+                : pairArr.map(item => `
+                    <div class="bg-[#070b14] border border-slate-800/80 rounded-xl p-2.5 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs font-black text-amber-300 num-ltr">${escapeHTML(item.pair)}</span>
+                            <span class="text-[11px] text-slate-400 mr-1.5">(${item.count} عمليات)</span>
+                        </div>
+                        <span class="text-xs font-black num-ltr ${item.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}">${formatCurrency(item.pnl, true)}</span>
+                    </div>
+                `).join('');
+
+            // جدول الصفقات المفتوحة والمغلقة في هذه الفترة
+            const statusFilter = document.getElementById('analyticsStatusFilter').value;
+            let tableTrades = periodAllTrades;
+            if (statusFilter === 'open') tableTrades = periodAllTrades.filter(t => t.status === 'open');
+            if (statusFilter === 'closed') tableTrades = periodAllTrades.filter(t => t.status !== 'open');
+
+            const tbody = document.getElementById('periodTradesTableBody');
+            if (tableTrades.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 text-xs">لا توجد صفقات مطابقة للفلتر في هذه الفترة.</td></tr>`;
+            } else {
+                tbody.innerHTML = tableTrades.map(t => {
+                    const isOpen = t.status === 'open';
+                    const isWin = Number(t.pnl) >= 0;
+                    return `
+                        <tr onclick="openTradeDetailModal('${t.dayId}', '${t.id}')" class="hover:bg-slate-800/50 transition cursor-pointer">
+                            <td class="py-3 px-3 text-xs text-slate-300 num-ltr">${t.date}</td>
+                            <td class="py-3 px-3">
+                                ${isOpen
+                                    ? '<span class="text-[11px] font-extrabold px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300">مفتوحة</span>'
+                                    : '<span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300">مغلقة</span>'
+                                }
+                            </td>
+                            <td class="py-3 px-3 font-extrabold text-amber-300 text-xs num-ltr">${escapeHTML(t.pair)}</td>
+                            <td class="py-3 px-3 font-bold text-white text-xs num-ltr">${Number(t.lot).toFixed(2)}</td>
+                            <td class="py-3 px-3 text-xs font-bold ${t.direction === 'شراء' ? 'text-emerald-400' : 'text-rose-400'}">${escapeHTML(t.direction)}</td>
+                            <td class="py-3 px-3 text-xs text-slate-300">${escapeHTML(t.setup)}</td>
+                            <td class="py-3 px-3 text-center">
+                                ${t.image ? '<i class="fa-regular fa-image text-blue-400"></i>' : '<span class="text-slate-600">-</span>'}
+                            </td>
+                            <td class="py-3 px-3 font-black text-xs num-ltr ${isWin ? 'text-emerald-400' : 'text-red-400'}">${formatCurrency(t.pnl, true)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            renderEquityChart(initialBalance, closedTrades);
+        }
+
+        function renderEquityChart(initialBalance, trades) {
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            if (equityChartInstance) equityChartInstance.destroy();
+
+            const labels = ['البداية'];
+            const points = [initialBalance];
+            let running = initialBalance;
+
+            trades.forEach((t, i) => {
+                running += Number(t.pnl);
+                labels.push(`#${i + 1} ${t.pair}`);
+                points.push(Number(running.toFixed(2)));
+            });
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            equityChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'الرصيد ($)',
+                        data: points,
+                        borderColor: '#10b981',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#070b14',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0f1626',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#10b981',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: (ctx) => `الرصيد: ${ctx.parsed.y.toLocaleString('en-US')} $`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 65, 85, 0.2)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Cairo', size: 11 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(51, 65, 85, 0.2)' },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: { family: 'Cairo', size: 11 },
+                                callback: (v) => v.toLocaleString('en-US') + ' $'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // التصدير والاستيراد وإعادة الضبط
+        // ==========================================
+        function exportCSV() {
+            let csv = '\uFEFFالتاريخ,اليوم,الرصيد الافتتاحي,الحالة,حجم اللوت,الزوج,النوع,السبب الفني,الالتزام,الربح/الخسارة ($)\n';
+            appState.days.forEach(d => {
+                if (d.trades.length === 0) {
+                    csv += `${d.date},${d.dayName},${d.startingBalance},-,0,-,-,-,-,0\n`;
+                } else {
+                    d.trades.forEach(t => {
+                        csv += `${d.date},${d.dayName},${d.startingBalance},${t.status === 'open' ? 'مفتوحة' : 'مغلقة'},${t.lot},${t.pair},${t.direction},"${t.setup}",${t.disciplined ? 'نعم' : 'لا'},${t.pnl}\n`;
+                    });
+                }
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `سجل_المتداول_ELITE_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('تم تصدير ملف Excel بنجاح');
+        }
+
+        function exportJSON() {
+            const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `نسخة_سجل_المتداول_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('تم حفظ النسخة الاحتياطية');
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && Array.isArray(imported.days) && imported.days.length > 0) {
+                        appState = imported;
+                        saveData();
+                        renderJournal();
+                        showToast('تم استيراد البيانات بنجاح');
+                    } else {
+                        showToast('ملف غير صالح', 'error');
+                    }
+                } catch (err) {
+                    showToast('خطأ في قراءة الملف', 'error');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function confirmResetData() {
+            showConfirm('استعادة البيانات الافتراضية', 'هل تريد إعادة ضبط السجل واستعادة البيانات التجريبية؟', () => {
+                appState = JSON.parse(JSON.stringify(defaultData));
+                saveData();
+                resetTradeForm();
+                renderJournal();
+                showToast('تمت استعادة البيانات الافتراضية');
+            });
+        }
+
+        function escapeHTML(str) {
+            return String(str).replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderJournal();
+        });
+    </script>
+<div id="bottomNav">
+  <button data-t="journal" onclick="switchTab('journal')"><i class="fa-solid fa-book-open"></i>السجل</button>
+  <button data-t="calendar" onclick="switchTab('calendar')"><i class="fa-regular fa-calendar-check"></i>التقويم</button>
+  <button data-t="analytics" onclick="switchTab('analytics')"><i class="fa-solid fa-chart-pie"></i>التقييم</button>
+</div>
+<script>
+(function(){
+  const orig=window.switchTab;
+  window.switchTab=function(t){orig(t);document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));window.scrollTo({top:0});};
+  document.querySelectorAll('#bottomNav button').forEach(b=>b.classList.toggle('on',b.dataset.t==='journal'));
+  if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+
+function renderExtraStats(trades){
+  const box=document.getElementById('extraStats'); if(!box) return;
+  const T=[...trades].sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+  if(!T.length){box.innerHTML='<div class="text-slate-400 text-sm p-4">لا توجد صفقات مغلقة في هذه الفترة.</div>';return;}
+  const p=T.map(t=>Number(t.pnl)), w=p.filter(x=>x>0), l=p.filter(x=>x<0);
+  const avgW=w.length?w.reduce((a,b)=>a+b,0)/w.length:0, avgL=l.length?l.reduce((a,b)=>a+b,0)/l.length:0;
+  const wr=w.length/p.length, expc=wr*avgW+(1-wr)*avgL;
+  let cur=0,maxL=0,curW=0,maxW=0,eq=0,peak=0,dd=0;
+  p.forEach(x=>{ if(x<0){cur++;curW=0}else if(x>0){curW++;cur=0}; maxL=Math.max(maxL,cur);maxW=Math.max(maxW,curW);
+    eq+=x;peak=Math.max(peak,eq);dd=Math.max(dd,peak-eq);});
+  const byDay={}; T.forEach(t=>{byDay[t.date]=(byDay[t.date]||0)+Number(t.pnl)});
+  const days=Object.entries(byDay).sort((a,b)=>a[1]-b[1]);
+  const wd=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'],byWd={};
+  T.forEach(t=>{const k=new Date(t.date+'T00:00:00').getDay();byWd[k]=(byWd[k]||0)+Number(t.pnl)});
+  const wds=Object.entries(byWd).sort((a,b)=>b[1]-a[1]);
+  const f=n=>(n>=0?'+':'')+n.toFixed(2)+' $', c=n=>n>=0?'text-emerald-400':'text-red-400';
+  const card=(k,v,cl,sub)=>`<div class="glass-card rounded-2xl p-4"><span class="text-xs text-slate-400 block mb-1">${k}</span><div class="text-lg font-black num-ltr ${cl}">${v}</div>${sub?`<span class="text-[11px] text-slate-500">${sub}</span>`:''}</div>`;
+  box.innerHTML=
+   card('متوسط الربح',f(avgW),'text-emerald-400')+card('متوسط الخسارة',f(avgL),'text-red-400')+
+   card('التوقع لكل صفقة (Expectancy)',f(expc),c(expc),'الربح المتوقع من كل صفقة')+
+   card('أقصى تراجع (Drawdown)','-'+dd.toFixed(2)+' $','text-red-400','من أعلى قمة')+
+   card('أطول سلسلة خسائر',maxL+' صفقة','text-red-400')+card('أطول سلسلة أرباح',maxW+' صفقة','text-emerald-400')+
+   card('أفضل يوم',f(days[days.length-1][1]),'text-emerald-400',days[days.length-1][0])+
+   card('أسوأ يوم',f(days[0][1]),'text-red-400',days[0][0])+
+   card('أفضل يوم أسبوع',wd[wds[0][0]],'text-blue-300',f(wds[0][1]))+
+   card('أضعف يوم أسبوع',wd[wds[wds.length-1][0]],'text-amber-300',f(wds[wds.length-1][1]));
+}
+</script>
+</body>
+</html>
